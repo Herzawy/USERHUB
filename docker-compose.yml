@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo
+    volumes:
+      - db_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  test:
+    build: .
+    environment:
+      - NODE_ENV=test
+    command: npm test
+    depends_on:
+      - app
+      - mongodb
+      - redis
+    networks:
+      - app-network
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge
